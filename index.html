@@ -287,14 +287,50 @@ const TAG_AUTHOR_COLORS={tc0:'#0369a1',tc1:'#92400e',tc2:'#065f46',tc3:'#5b21b6'
 function borderColor(t){const c=tagColorMap[t]||'tc0';return TAG_BORDER_COLORS[c]||'#059669';}
 function authorColor(t){const c=tagColorMap[t]||'tc0';return TAG_AUTHOR_COLORS[c]||'#065f46';}
 
-// Live data — loaded from Google Sheets via Apps Script proxy
+// ── API LAYER ──────────────────────────────────────────────────────────────
+const API = '/api/sheets';
+
+async function api(action, body){
+  if(body){
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...body})});
+    return r.json();
+  }
+  const r=await fetch(`${API}?action=${action}`);
+  return r.json();
+}
+
+async function loadAll(){
+  showLoadingState();
+  try{
+    const data=await api('getAll');
+    if(data.error) throw new Error(data.error);
+    tags  =data.tags  ||[];
+    quotes=data.quotes||[];
+    books =data.books ||[];
+    tags.forEach(t=>tagClass(t));
+  }catch(e){
+    showError('Could not load data: '+e.message);
+  }
+}
+
+function showLoadingState(){
+  const ql=document.getElementById('quotesList');
+  const bg=document.getElementById('booksGrid');
+  if(ql) ql.innerHTML='<div class="thinking" style="justify-content:center;padding:32px 0;"><div class="dots"><span></span><span></span><span></span></div></div>';
+  if(bg) bg.innerHTML='<div class="thinking" style="grid-column:1/-1;justify-content:center;padding:32px 0;"><div class="dots"><span></span><span></span><span></span></div></div>';
+}
+
+function showError(msg){
+  const el=document.getElementById('pane-quotes');
+  if(el) el.insertAdjacentHTML('afterbegin',`<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#dc2626;">${esc(msg)}</div>`);
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────
 let tags   = [];
 let quotes = [];
 let books  = [];
-tags.forEach(t=>tagClass(t));
 
 let recentSearches = JSON.parse(localStorage.getItem('kn-recent')||'[]');
-
 let activeQTag='all', activeBTag='all';
 
 // INIT — called at bottom of script after all functions are defined
@@ -759,10 +795,14 @@ function renderMd(md){
 // ── INIT — must be last, after all functions are defined ──────────────────
 document.getElementById('headerDate').textContent=
   new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}).replace(',','');
-updateStats();
-renderQuotes();
-renderBooks();
-renderRecent();
+
+(async()=>{
+  await loadAll();
+  updateStats();
+  renderQuotes();
+  renderBooks();
+  renderRecent();
+})();
 </script>
 </body>
 </html>
