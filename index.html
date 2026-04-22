@@ -515,34 +515,29 @@ function addNewTag(prefix){
   }
 }
 
-function confirmNewTag(prefix){
+async function confirmNewTag(prefix){
   const inp=document.getElementById('newTagInlineInput');
   if(!inp) return;
-  const t=inp.value.trim().toLowerCase();
-  if(!t){inp.focus();return;}
+  const raw=inp.value.trim();
+  if(!raw){inp.focus();return;}
+  const t=raw.charAt(0).toUpperCase()+raw.slice(1); // capitalise first letter
   if(tags.includes(t)){inp.value='';inp.placeholder='Already exists';return;}
-  tags.push(t); tagClass(t);
+  await api('addTag',{tag:t});
+  await loadAll();
   const picker=document.getElementById(prefix+'TagPicker');
-  if(!picker) return;
-  // Remove inline input
-  const inlineWrap=picker.querySelector('.new-tag-inline');
-  if(inlineWrap) inlineWrap.remove();
-  // Add chip before the "+ new" button
-  const newBtn=picker.querySelector('.tag-new-chip');
-  const chip=document.createElement('span');
-  chip.className=`tag-pick-chip ${tagClass(t)} on`;
-  chip.textContent=t;
-  chip.onclick=function(){this.classList.toggle('on');};
-  picker.insertBefore(chip,newBtn);
+  if(picker) picker.innerHTML=buildTagPicker(prefix);
   updateStats();
 }
 
-function saveQuote(){
+async function saveQuote(){
   const text=(document.getElementById('qText').value||'').trim();
   const author=(document.getElementById('qAuthor').value||'').trim();
   const selTags=[...document.querySelectorAll('#qTagPicker .tag-pick-chip.on')].map(e=>e.childNodes[0].textContent.trim());
   if(!text) return;
-  quotes.unshift({id:'q'+Date.now(),text,author,tags:selTags,created:new Date().toISOString().split('T')[0]});
+  const btn=document.querySelector('#overlay .btn-pri');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  await api('addQuote',{text,author,tags:selTags});
+  await loadAll();
   updateStats(); closeModal(); renderQuotes();
 }
 
