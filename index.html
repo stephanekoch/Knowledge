@@ -577,6 +577,22 @@ function setBTag(t){activeBTag=t;renderBooks();}
 
 const SPINE=['#059669','#0369a1','#7c3aed','#d97706','#0e7490','#374151','#be185d','#b45309','#065f46'];
 
+// Convert any Google Drive URL format to a directly embeddable thumbnail URL
+function toDriveImg(url){
+  if(!url) return '';
+  // Already a thumbnail URL — leave as-is
+  if(url.includes('drive.google.com/thumbnail') || url.includes('lh3.googleusercontent.com')) return url;
+  // Extract file ID from any drive.google.com/file/d/FILE_ID/... format
+  const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if(m) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400`;
+  // Extract from ?id=FILE_ID format
+  const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if(m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w400`;
+  // If it looks like a bare file ID (no slashes or dots), use directly
+  if(/^[a-zA-Z0-9_-]{25,}$/.test(url.trim())) return `https://drive.google.com/thumbnail?id=${url.trim()}&sz=w400`;
+  return url;
+}
+
 function renderBooks(){
   renderBTagFilter();
   const f=activeBTag==='all'?[...books]:books.filter(b=>(b.tags||[]).includes(activeBTag));
@@ -589,7 +605,7 @@ function renderBooks(){
     const col=SPINE[books.indexOf(b)%SPINE.length];
     const init=b.title.split(' ').filter(w=>w).slice(0,2).map(w=>w[0]).join('').toUpperCase();
     const tg=(b.tags||[]).slice(0,2).map(t=>`<span class="tag-mini ${tagClass(t)}" style="font-size:10px;padding:2px 5px;">${esc(t)}</span>`).join('');
-    const coverSrc = b.coverUrl || '';
+    const coverSrc = toDriveImg(b.coverUrl);
     const coverHtml = `
       <img class="book-cover-img" id="cover-${esc(b.id)}"
         src="${esc(coverSrc)}"
