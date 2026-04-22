@@ -598,11 +598,14 @@ function renderBooks(){
     const col=SPINE[books.indexOf(b)%SPINE.length];
     const init=b.title.split(' ').filter(w=>w).slice(0,2).map(w=>w[0]).join('').toUpperCase();
     const tg=(b.tags||[]).slice(0,2).map(t=>`<span class="tag-mini ${tagClass(t)}" style="font-size:10px;padding:2px 5px;">${esc(t)}</span>`).join('');
-    // Cover: try PDF thumbnail via Google Drive (only works if folderId is set), else placeholder
-    const coverHtml=b.folderId
-      ? `<img class="book-cover-img" src="" data-folderid="${esc(b.folderId)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-         <div class="book-cover-ph" style="background:${col};display:flex;">${init}</div>`
-      : `<div class="book-cover-ph" style="background:${col};">${init}</div>`;
+    const coverSrc = b.coverUrl || '';
+    const coverHtml = `
+      <img class="book-cover-img" id="cover-${esc(b.id)}"
+        src="${esc(coverSrc)}"
+        alt="${esc(b.title)}"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+        style="${coverSrc?'':'display:none;'}"/>
+      <div class="book-cover-ph" style="background:${col};display:${coverSrc?'none':'flex'};">${init}</div>`;
     return `<div class="book-card" onclick="openBookDetail('${b.id}')">
       <div class="book-cover-wrap">${coverHtml}</div>
       <div class="book-info">
@@ -612,6 +615,28 @@ function renderBooks(){
       </div>
     </div>`;
   }).join('');
+  fetchMissingCovers();
+}
+
+async function fetchMissingCovers(){
+  const needCover=books.filter(b=>b.folderId&&!b.coverUrl);
+  for(const b of needCover){
+    try{
+      const rowId=b.id.replace('row_','');
+      const r=await fetch(`${API}?action=getPdfCover&folderId=${encodeURIComponent(b.folderId)}&bookRowId=${rowId}`);
+      const data=await r.json();
+      if(data.coverUrl){
+        b.coverUrl=data.coverUrl;
+        const img=document.getElementById('cover-'+b.id);
+        if(img){
+          img.src=data.coverUrl;
+          img.style.display='block';
+          const ph=img.nextElementSibling;
+          if(ph) ph.style.display='none';
+        }
+      }
+    }catch(e){ /* placeholder stays */ }
+  }
 }
 
 function openAddBook(){
