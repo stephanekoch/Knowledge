@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Knowledge"/>
+<meta name="theme-color" content="#059669"/>
+<title>Knowledge</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ffffff;--card:#ffffff;--border:#eeeeee;--muted:#bbbbbb;
+  --text:#1a1a1a;--text2:#555555;--surface:#f5f5f5;
+  --accent:#059669;--accent-light:#ecfdf5;--accent-text:#047857;
+  --danger:#e85d40;--success:#16a34a;--success-light:#f0fdf4;
+  --warning:#d97706;--warning-light:#fffbeb;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent;overscroll-behavior:none;touch-action:manipulation;}
+.app{display:flex;flex-direction:column;height:100%;max-width:560px;margin:0 auto;background:#f5f5f5;}
+
+/* HEADER */
+.header{flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--border);padding:14px 18px 12px;}
+.header-top{display:flex;align-items:center;gap:10px;}
+.header-icon{width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.header-icon svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.app-title{font-size:26px;color:var(--text);font-weight:600;letter-spacing:-.03em;flex:1;}
+.header-date{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.04em;}
+
+/* BOTTOM NAV */
+.bottom-nav{flex-shrink:0;background:var(--card);border-top:1px solid var(--border);display:flex;padding:8px 0 max(env(safe-area-inset-bottom),6px);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;cursor:pointer;padding:2px 0;}
+.nav-btn span{font-size:10px;color:var(--muted);font-family:'Inter',sans-serif;letter-spacing:.04em;}
+.nav-btn.active span{color:var(--accent);font-weight:700;}
+.nav-btn svg{width:22px;height:22px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.nav-btn.active svg{stroke:var(--accent);}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.pane{display:none;padding:14px 14px 24px;}
+.pane.active{display:block;}
+
+/* SECTION LABEL */
+.sec{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;}
+
+/* FIELDS */
+.field-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;display:block;}
+.field-inp{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;font-size:16px;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);outline:none;-webkit-appearance:none;transition:border-color .15s;}
+.field-inp:focus{border-color:var(--accent);}
+.field-inp::placeholder{color:var(--muted);}
+textarea.field-inp{resize:none;line-height:1.5;}
+
+/* BUTTONS */
+.btn-pri{flex:1;padding:13px;border:none;border-radius:9px;background:var(--accent);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:white;}
+.btn-sec{flex:1;padding:13px;border:1px solid var(--border);border-radius:9px;background:var(--card);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;color:var(--text2);}
+.btn-pri:disabled{opacity:.4;cursor:not-allowed;}
+.btn-row{display:flex;gap:8px;margin-top:8px;}
+.save-btn{width:100%;padding:16px;border:none;border-radius:11px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;background:var(--accent);color:white;margin-bottom:4px;}
+.save-btn:disabled{opacity:.4;cursor:not-allowed;}
+.add-dashed-btn{width:100%;border:1.5px dashed var(--border);border-radius:11px;padding:13px;background:transparent;font-family:'Inter',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:10px;}
+
+/* TAG FILTER PILLS */
+.tags-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none;}
+.tags-scroll::-webkit-scrollbar{display:none;}
+.pill{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:20px;border:1px solid var(--border);background:var(--card);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;color:var(--muted);white-space:nowrap;}
+.pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* TAG COLOUR PALETTE */
+.tc0{background:#e0f2fe;color:#065f46;}
+.tc1{background:#fef3c7;color:#92400e;}
+.tc2{background:#d1fae5;color:#065f46;}
+.tc3{background:#ede9fe;color:#5b21b6;}
+.tc4{background:#fee2e2;color:#991b1b;}
+.tc5{background:#fce7f3;color:#9d174d;}
+.tc6{background:#f0fdf4;color:#166534;}
+.tc7{background:#fff7ed;color:#9a3412;}
+.tc8{background:#f1f5f9;color:#334155;}
+.tag-mini{display:inline-block;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:.01em;}
+
+/* TAG PICKER */
+.tag-picker{display:flex;flex-wrap:wrap;gap:6px;padding:10px;border:1px solid var(--border);border-radius:9px;min-height:46px;}
+.tag-pick-chip{padding:5px 11px;border-radius:14px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .12s;}
+.tag-pick-chip.on{outline:2px solid var(--accent);outline-offset:1px;}
+.tag-new-chip{padding:5px 11px;border-radius:14px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px dashed var(--accent);background:var(--accent-light);color:var(--accent);}
+.tag-pick-rm{margin-left:5px;font-size:13px;opacity:.5;cursor:pointer;font-style:normal;line-height:1;vertical-align:middle;}
+.tag-pick-rm:hover{opacity:1;}
+
+/* ── KNOWLEDGE TAB ── */
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center;}
+.stat-val{font-size:22px;font-weight:700;color:var(--accent);line-height:1;}
+.stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px;line-height:1.3;}
+.ask-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;}
+.ask-textarea{width:100%;min-height:80px;padding:10px 12px;font-size:16px;font-family:'Inter',sans-serif;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--text);resize:none;outline:none;line-height:1.5;transition:border-color .15s;-webkit-appearance:none;}
+.ask-textarea:focus{border-color:var(--accent);}
+.ask-textarea::placeholder{color:var(--muted);}
+.answer-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;}
+.answer-lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px;}
+.answer-body{font-size:15px;color:var(--text);line-height:1.65;}
+.answer-body p{margin-bottom:10px;}
+.answer-body p:last-child{margin-bottom:0;}
+.answer-body strong{font-weight:600;}
+.answer-body h3{font-size:15px;font-weight:700;margin:12px 0 5px;}
+.answer-body blockquote{border-left:3px solid var(--accent);padding-left:12px;color:var(--text2);font-style:italic;margin:10px 0;}
+.sources-row{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.src-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.src-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:600;margin:2px 3px 2px 0;}
+.src-pill.book{background:var(--accent-light);color:var(--accent-text);}
+.src-pill.quote{background:var(--warning-light);color:var(--warning);}
+.recent-section{margin-top:4px;}
+.recent-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}
+.recent-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:7px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.recent-item:active{border-color:var(--accent);}
+.recent-q{font-size:13px;color:var(--text);font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.recent-chevron{flex-shrink:0;width:16px;height:16px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── QUOTES TAB — Q2 left accent ── */
+.quote-card{background:var(--card);border:1px solid var(--border);border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:0 12px 12px 0;padding:13px 14px;margin-bottom:9px;position:relative;border-left-width:3px;border-left-style:solid;}
+.quote-text{font-size:15px;color:var(--text);line-height:1.6;margin-bottom:9px;}
+.quote-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.quote-author{font-size:12px;font-weight:600;flex-shrink:0;}
+.quote-tags-right{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;}
+.empty{text-align:center;color:var(--muted);font-size:13px;margin-top:60px;line-height:1.8;}
+
+/* ── BOOKS TAB — B3 two-col ── */
+.books-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.book-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.book-card:active{border-color:var(--accent);}
+/* Cover: tall, dominant */
+.book-cover-wrap{position:relative;width:100%;padding-bottom:150%;overflow:hidden;}
+.book-cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.book-cover-ph{position:absolute;inset:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;}
+.book-info{padding:9px 11px 11px;}
+.book-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.book-author{font-size:11px;color:var(--muted);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.book-tags{display:flex;flex-wrap:wrap;gap:3px;}
+
+/* BOOK DETAIL */
+.bk-hero{display:flex;gap:14px;margin-bottom:16px;}
+.bk-cover-img{width:64px;height:96px;border-radius:6px;object-fit:cover;flex-shrink:0;}
+.bk-cover-ph{width:64px;height:96px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;}
+.bk-title{font-size:19px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px;line-height:1.2;color:var(--text);}
+.bk-author{font-size:13px;color:var(--text2);margin-bottom:8px;}
+.bk-view-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.bk-view-tabs::-webkit-scrollbar{display:none;}
+.bvtab{flex-shrink:0;padding:7px 13px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;}
+.bvtab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.notes-md{font-size:15px;color:var(--text);line-height:1.7;}
+.notes-md h2{font-size:15px;font-weight:700;margin:14px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.notes-md h3{font-size:13px;font-weight:700;margin:10px 0 4px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;}
+.notes-md p{margin-bottom:10px;}
+.notes-md ul{padding-left:18px;margin-bottom:10px;}
+.notes-md li{margin-bottom:4px;}
+.notes-md blockquote{border-left:3px solid var(--accent);padding-left:12px;margin:10px 0;color:var(--text2);font-style:italic;}
+.notes-md strong{font-weight:700;}
+.notes-md hr{border:none;border-top:1px solid var(--border);margin:14px 0;}
+.killer-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);}
+.killer-item:last-child{border:none;}
+.killer-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:8px;}
+.killer-text{font-size:15px;color:var(--text);line-height:1.6;}
+.gen-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.gen-badge{font-size:10px;font-weight:700;color:var(--success);padding:3px 8px;background:var(--success-light);border-radius:10px;text-transform:uppercase;letter-spacing:.06em;}
+.regen-btn{font-size:11px;color:var(--muted);border:none;background:none;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:underline;padding:0;}
+.bk-ask-inp{width:100%;padding:10px 12px;font-size:15px;font-family:'Inter',sans-serif;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--text);outline:none;-webkit-appearance:none;}
+.bk-ask-inp:focus{border-color:var(--accent);}
+
+/* LOADING */
+.thinking{display:flex;align-items:center;gap:8px;padding:12px 0;color:var(--muted);font-size:13px;}
+.dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:.3;animation:blink 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+.overlay.hidden{display:none;}
+.modal-sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-top{padding:20px 18px 0;flex-shrink:0;}
+.modal-body{padding:0 18px 16px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;}
+.modal-foot{padding:12px 18px;padding-bottom:max(env(safe-area-inset-bottom),16px);flex-shrink:0;border-top:1px solid var(--border);background:var(--bg);}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.modal-title{font-size:19px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px;color:var(--text);}
+.form-row{margin-bottom:14px;}
+.qd-text{font-size:18px;color:var(--text);line-height:1.65;margin-bottom:14px;}
+.qd-author{font-size:13px;font-weight:600;margin-bottom:14px;}
+.qd-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;}
+.qd-del-btn{width:100%;padding:13px;border:1px solid #fecaca;border-radius:9px;background:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;color:var(--danger);margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+      <span class="app-title">Knowledge</span>
+      <span class="header-date" id="headerDate"></span>
+    </div>
+  </div>
+
+  <div class="content" id="mainContent">
+
+    <!-- KNOWLEDGE -->
+    <div class="pane active" id="pane-knowledge">
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card"><div class="stat-val" id="statQuotes">0</div><div class="stat-lbl">Quotes</div></div>
+        <div class="stat-card"><div class="stat-val" id="statBooks">0</div><div class="stat-lbl">Books</div></div>
+        <div class="stat-card"><div class="stat-val" id="statTags">0</div><div class="stat-lbl">Tags</div></div>
+      </div>
+      <div class="ask-card">
+        <div class="sec" style="margin-bottom:10px;">Ask anything</div>
+        <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:10px;line-height:1.4;letter-spacing:.01em;">Searches your quotes and book notes first, then draws on general knowledge.</div>
+        <textarea class="ask-textarea" id="askInput" rows="3" placeholder="e.g. What have I learned about resilience? What did Seneca say about time? How do the best founders build culture?"></textarea>
+        <button class="save-btn" id="askBtn" style="margin-top:10px;" onclick="askKnowledge()">Search my knowledge</button>
+      </div>
+      <div id="answerArea"></div>
+      <div class="recent-section" id="recentSection"></div>
+    </div>
+
+    <!-- QUOTES -->
+    <div class="pane" id="pane-quotes">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec" style="margin-bottom:0;">Quotes</div>
+        <button class="btn-pri" style="flex:none;padding:8px 14px;font-size:13px;border-radius:9px;" onclick="openAddQuote()">+ Add</button>
+      </div>
+      <div class="tags-scroll" id="quoteTagFilter"></div>
+      <div id="quotesList"></div>
+    </div>
+
+    <!-- BOOKS -->
+    <div class="pane" id="pane-reading">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec" style="margin-bottom:0;">Books</div>
+        <button class="btn-pri" style="flex:none;padding:8px 14px;font-size:13px;border-radius:9px;" onclick="openAddBook()">+ Add</button>
+      </div>
+      <div class="tags-scroll" id="readingTagFilter"></div>
+      <div id="booksGrid" class="books-grid"></div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-knowledge" onclick="switchTab('knowledge')">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Knowledge</span>
+    </button>
+    <button class="nav-btn" id="nav-quotes" onclick="switchTab('quotes')">
+      <svg viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+      <span>Quotes</span>
+    </button>
+    <button class="nav-btn" id="nav-reading" onclick="switchTab('reading')">
+      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <span>Books</span>
+    </button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay" onclick="maybeClose(event)">
+  <div class="modal-sheet" id="modal" onclick="event.stopPropagation()"></div>
+</div>
+
+<script>
+const SHEET_ID='1_0w05Mu0EOwU16ZvwkptduflUCb9SNpCnjxfVYK0unY';
+const BOOKS_FOLDER='1efyYJftw7v4_pfSRlumTCTTGnD7Z9EMt';
+const MODEL='claude-sonnet-4-20250514';
+
+// Tag colour rotation
+const TAG_COLORS=['tc0','tc1','tc2','tc3','tc4','tc5','tc6','tc7','tc8'];
+let tagColorMap={};
+function tagClass(t){
+  if(!tagColorMap[t]){const used=Object.keys(tagColorMap).length;tagColorMap[t]=TAG_COLORS[used%TAG_COLORS.length];}
+  return tagColorMap[t];
+}
+
+// Tag accent colours for Q2 left border
+const TAG_BORDER_COLORS={tc0:'#0891B2',tc1:'#d97706',tc2:'#059669',tc3:'#7c3aed',tc4:'#dc2626',tc5:'#be185d',tc6:'#16a34a',tc7:'#ea580c',tc8:'#475569'};
+const TAG_AUTHOR_COLORS={tc0:'#0369a1',tc1:'#92400e',tc2:'#065f46',tc3:'#5b21b6',tc4:'#991b1b',tc5:'#9d174d',tc6:'#166534',tc7:'#9a3412',tc8:'#334155'};
+function borderColor(t){const c=tagColorMap[t]||'tc0';return TAG_BORDER_COLORS[c]||'#059669';}
+function authorColor(t){const c=tagColorMap[t]||'tc0';return TAG_AUTHOR_COLORS[c]||'#065f46';}
+
+// Live data — loaded from Google Sheets via Apps Script proxy
+let tags   = [];
+let quotes = [];
+let books  = [];
+let recentSearches = JSON.parse(localStorage.getItem('kn-recent')||'[]');
+let activeQTag='all', activeBTag='all';
+
+const API = '/api/sheets';
+
+async function api(action, body){
+  if(body){
+    const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action, ...body})});
+    return r.json();
+  }
+  const r = await fetch(`${API}?action=${action}`);
+  return r.json();
+}
+
+async function loadAll(){
+  showLoadingState();
+  try {
+    const data = await api('getAll');
+    if(data.error) throw new Error(data.error);
+    tags   = data.tags   || [];
+    quotes = data.quotes || [];
+    books  = data.books  || [];
+    tags.forEach(t=>tagClass(t));
+  } catch(e) {
+    showError('Could not load data: ' + e.message);
+  }
+}
+
+function showLoadingState(){
+  document.getElementById('quotesList').innerHTML =
+    '<div class="thinking" style="justify-content:center;padding:32px 0;"><div class="dots"><span></span><span></span><span></span></div></div>';
+  document.getElementById('booksGrid').innerHTML =
+    '<div class="thinking" style="grid-column:1/-1;justify-content:center;padding:32px 0;"><div class="dots"><span></span><span></span><span></span></div></div>';
+}
+
+function showError(msg){
+  const banner = `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#dc2626;">${esc(msg)}</div>`;
+  document.getElementById('pane-quotes').insertAdjacentHTML('afterbegin', banner);
+}
+
+// INIT — called at bottom of script after all functions are defined
+
+function updateStats(){
+  document.getElementById('statQuotes').textContent=quotes.length;
+  document.getElementById('statBooks').textContent=books.length;
+  document.getElementById('statTags').textContent=tags.length;
+}
+
+// TABS
+function switchTab(name){
+  ['knowledge','quotes','reading'].forEach(n=>{
+    document.getElementById('nav-'+n).classList.toggle('active',n===name);
+    document.getElementById('pane-'+n).classList.toggle('active',n===name);
+  });
+  document.getElementById('mainContent').scrollTop=0;
+}
+
+// ── KNOWLEDGE ─────────────────────────────────────────────────────────────
+async function askKnowledge(){
+  const q=document.getElementById('askInput').value.trim();
+  if(!q) return;
+  const btn=document.getElementById('askBtn');
+  btn.disabled=true; btn.textContent='Searching…';
+  const area=document.getElementById('answerArea');
+  area.innerHTML=`<div class="answer-card"><div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Searching your library…</div></div>`;
+
+  let ctx='';
+  if(quotes.length){ctx+='\n\nMY QUOTES:\n';quotes.forEach(qt=>ctx+=`"${qt.text}" — ${qt.author} [${(qt.tags||[]).join(', ')}]\n`);}
+  const bwn=books.filter(b=>b.summary||b.detailedRead);
+  if(bwn.length){ctx+='\n\nMY BOOKS:\n';bwn.forEach(b=>{ctx+=`\n${b.title} by ${b.author}:\n${b.summary||''}\n`;});}
+  const hasPers=quotes.length>0||bwn.length>0;
+  const sys=`You are a personal knowledge assistant. ${hasPers?'Prioritise the user\'s personal library. Reference exact quotes and book titles.':'Use general knowledge.'} Be direct and insightful. Under 300 words.${hasPers?' At the END output ONLY: <sources>{"books":["Title"],"quotes":["Author"]}</sources>':''}`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:1000,system:sys,messages:[{role:'user',content:hasPers?`My library:\n${ctx}\n\nQuestion: ${q}`:q}]})});
+    const data=await resp.json();
+    const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    let answer=raw,srcs={books:[],quotes:[]};
+    const m=raw.match(/<sources>([\s\S]*?)<\/sources>/);
+    if(m){try{srcs=JSON.parse(m[1]);}catch(e){} answer=raw.replace(/<sources>[\s\S]*?<\/sources>/,'').trim();}
+
+    let srcHtml='';
+    if(srcs.books.length||srcs.quotes.length){
+      srcHtml=`<div class="sources-row"><div class="src-lbl">Sources</div>`;
+      srcs.books.forEach(t=>srcHtml+=`<span class="src-pill book">📖 ${esc(t)}</span>`);
+      srcs.quotes.forEach(a=>srcHtml+=`<span class="src-pill quote">❝ ${esc(a)}</span>`);
+      srcHtml+='</div>';
+    }
+    area.innerHTML=`<div class="answer-card"><div class="answer-lbl">Answer</div><div class="answer-body">${md2html(answer)}</div>${srcHtml}</div>`;
+
+    // Save to recent
+    recentSearches.unshift({q, answer, srcs, ts: Date.now()});
+    if(recentSearches.length>5) recentSearches=recentSearches.slice(0,5);
+    localStorage.setItem('kn-recent', JSON.stringify(recentSearches));
+    renderRecent();
+  }catch(e){area.innerHTML=`<div class="answer-card"><p style="color:var(--danger);font-size:13px;">Error: ${esc(e.message)}</p></div>`;}
+  btn.disabled=false; btn.textContent='Search my knowledge';
+}
+
+function renderRecent(){
+  const el=document.getElementById('recentSection');
+  if(!recentSearches.length){el.innerHTML='';return;}
+  let h=`<div class="recent-lbl" style="margin-top:4px;">Recent searches</div>`;
+  recentSearches.forEach((r,i)=>{
+    h+=`<div class="recent-item" onclick="showRecent(${i})">
+      <span class="recent-q">${esc(r.q)}</span>
+      <svg class="recent-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+  });
+  el.innerHTML=h;
+}
+
+function showRecent(i){
+  const r=recentSearches[i];
+  if(!r) return;
+  document.getElementById('askInput').value=r.q;
+  let srcHtml='';
+  if(r.srcs&&(r.srcs.books.length||r.srcs.quotes.length)){
+    srcHtml=`<div class="sources-row"><div class="src-lbl">Sources</div>`;
+    r.srcs.books.forEach(t=>srcHtml+=`<span class="src-pill book">📖 ${esc(t)}</span>`);
+    r.srcs.quotes.forEach(a=>srcHtml+=`<span class="src-pill quote">❝ ${esc(a)}</span>`);
+    srcHtml+='</div>';
+  }
+  document.getElementById('answerArea').innerHTML=
+    `<div class="answer-card"><div class="answer-lbl">Answer</div><div class="answer-body">${md2html(r.answer)}</div>${srcHtml}</div>`;
+  document.getElementById('mainContent').scrollTop=0;
+}
+
+// ── QUOTES ────────────────────────────────────────────────────────────────
+function renderQTagFilter(){
+  const el=document.getElementById('quoteTagFilter');
+  let h=`<span class="pill ${activeQTag==='all'?'active':''}" onclick="setQTag('all')">All</span>`;
+  tags.forEach(t=>{
+    const n=quotes.filter(q=>(q.tags||[]).includes(t)).length;
+    if(n) h+=`<span class="pill ${activeQTag===t?'active':''}" onclick="setQTag('${t}')">${esc(t)} <span style="opacity:.6;font-size:11px">${n}</span></span>`;
+  });
+  el.innerHTML=h;
+}
+function setQTag(t){activeQTag=t;renderQuotes();}
+
+function renderQuotes(){
+  renderQTagFilter();
+  const f=quotes.filter(q=>activeQTag==='all'||(q.tags||[]).includes(activeQTag));
+  const el=document.getElementById('quotesList');
+  if(!f.length){el.innerHTML=`<div class="empty">${quotes.length===0?'No quotes yet.<br/>Tap + Add to get started.':'No quotes with this tag.'}</div>`;return;}
+  el.innerHTML=f.map(q=>{
+    const primaryTag=(q.tags||[])[0]||'';
+    const bc=primaryTag?borderColor(primaryTag):'#059669';
+    const ac=primaryTag?authorColor(primaryTag):'#065f46';
+    const tagsHtml=(q.tags||[]).map(t=>`<span class="tag-mini ${tagClass(t)}">${esc(t)}</span>`).join('');
+    return `<div class="quote-card" style="border-left-color:${bc};">
+      <div class="quote-text">${esc(q.text)}</div>
+      <div class="quote-footer">
+        <span class="quote-author" style="color:${ac};">${esc(q.author||'Unknown')}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${tagsHtml}
+          <svg onclick="delQuote('${q.id}')" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#cccccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer;flex-shrink:0;transition:stroke .15s;" onmouseover="this.style.stroke='#e85d40'" onmouseout="this.style.stroke='#cccccc'">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddQuote(){
+  openModal(`
+    <div class="modal-title">Add quote</div>
+    <div class="form-row"><label class="field-lbl">Quote text</label>
+      <textarea class="field-inp" id="qText" rows="4" placeholder="Enter the quote…"></textarea></div>
+    <div class="form-row"><label class="field-lbl">Author / source</label>
+      <input class="field-inp" id="qAuthor" placeholder="e.g. Marcus Aurelius"/></div>
+    <div class="form-row"><label class="field-lbl">Tags</label>
+      <div class="tag-picker" id="qTagPicker">${buildTagPicker('q')}</div></div>
+    <div class="btn-row">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-pri" onclick="saveQuote()">Save</button>
+    </div>`);
+}
+
+function buildTagPicker(prefix){
+  return tags.map(t=>`<span class="tag-pick-chip ${tagClass(t)}" onclick="this.classList.toggle('on')" title="${esc(t)}">${esc(t)}<span class="tag-pick-rm" onclick="event.stopPropagation();removeTag('${esc(t)}','${prefix}')" title="Remove tag">×</span></span>`).join('')
+    +`<span class="tag-new-chip" onclick="addNewTag('${prefix}')">+ new</span>`;
+}
+
+async function removeTag(t, prefix){
+  const usedIn = [...quotes.filter(q=>(q.tags||[]).includes(t)), ...books.filter(b=>(b.tags||[]).includes(t))].length;
+  const msg = usedIn > 0
+    ? `Remove tag "${t}"? It's used on ${usedIn} item${usedIn!==1?'s':''}. It will be removed from all of them.`
+    : `Remove tag "${t}"?`;
+  if(!confirm(msg)) return;
+  await api('deleteTag',{tag:t});
+  await loadAll();
+  const picker=document.getElementById(prefix+'TagPicker');
+  if(picker) picker.innerHTML=buildTagPicker(prefix);
+  updateStats();
+}
+
+function addNewTag(prefix){
+  const pickerEl=document.getElementById(prefix+'TagPicker');
+  if(!pickerEl) return;
+  if(pickerEl.querySelector('.new-tag-inline')) return;
+  const wrap=document.createElement('div');
+  wrap.className='new-tag-inline';
+  wrap.style.cssText='display:flex;gap:6px;align-items:center;width:100%;margin-top:4px;';
+  wrap.innerHTML=`<input id="newTagInlineInput" class="field-inp" placeholder="Tag name…" style="flex:1;padding:7px 10px;font-size:14px;border-radius:7px;"/>
+    <button onclick="confirmNewTag('${prefix}')" style="padding:7px 12px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Add</button>
+    <button onclick="this.closest('.new-tag-inline').remove()" style="padding:7px 10px;background:var(--surface);color:var(--text2);border:1px solid var(--border);border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;">✕</button>`;
+  pickerEl.appendChild(wrap);
+  setTimeout(()=>{const i=document.getElementById('newTagInlineInput');if(i)i.focus();},50);
+}
+
+async function confirmNewTag(prefix){
+  const inp=document.getElementById('newTagInlineInput');
+  if(!inp) return;
+  const t=inp.value.trim().toLowerCase();
+  if(!t){inp.focus();return;}
+  if(tags.includes(t)){inp.value='';inp.placeholder='Already exists';return;}
+  await api('addTag',{tag:t});
+  await loadAll();
+  const picker=document.getElementById(prefix+'TagPicker');
+  if(picker) picker.innerHTML=buildTagPicker(prefix);
+  updateStats();
+}
+
+async function saveQuote(){
+  const text=(document.getElementById('qText').value||'').trim();
+  const author=(document.getElementById('qAuthor').value||'').trim();
+  const selTags=[...document.querySelectorAll('#qTagPicker .tag-pick-chip.on')].map(e=>e.childNodes[0].textContent.trim());
+  if(!text) return;
+  const btn=document.querySelector('#overlay .btn-pri');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  await api('addQuote',{text,author,tags:selTags});
+  await loadAll();
+  updateStats(); closeModal(); renderQuotes();
+}
+
+function openQuoteDetail(id){
+  const q=quotes.find(x=>x.id===id); if(!q) return;
+  const primaryTag=(q.tags||[])[0]||'';
+  const ac=primaryTag?authorColor(primaryTag):'#065f46';
+  const tgs=(q.tags||[]).map(t=>`<span class="tag-mini ${tagClass(t)}">${esc(t)}</span>`).join('');
+  openModal(`
+    <div class="modal-title">Quote</div>
+    <div class="qd-text">${esc(q.text)}</div>
+    <div class="qd-author" style="color:${ac};">${esc(q.author||'Unknown')}</div>
+    <div class="qd-tags">${tgs}</div>
+    <button class="btn-sec" style="width:100%;" onclick="closeModal()">Close</button>
+    <button class="qd-del-btn" onclick="delQuote('${id}')">Delete quote</button>`);
+}
+
+async function delQuote(id){
+  if(!confirm('Delete this quote?')) return;
+  // id is like 'row_6' — extract the row number
+  const rowId = id.replace('row_','');
+  await api('deleteQuote',{rowId});
+  await loadAll();
+  updateStats(); renderQuotes();
+}
+
+// ── BOOKS ─────────────────────────────────────────────────────────────────
+function renderBTagFilter(){
+  const el=document.getElementById('readingTagFilter');
+  const used=[...new Set(books.flatMap(b=>b.tags||[]))].sort();
+  let h=`<span class="pill ${activeBTag==='all'?'active':''}" onclick="setBTag('all')">All</span>`;
+  used.forEach(t=>h+=`<span class="pill ${activeBTag===t?'active':''}" onclick="setBTag('${t}')">${esc(t)}</span>`);
+  el.innerHTML=h;
+}
+function setBTag(t){activeBTag=t;renderBooks();}
+
+const SPINE=['#059669','#0369a1','#7c3aed','#d97706','#0e7490','#374151','#be185d','#b45309','#065f46'];
+
+function renderBooks(){
+  renderBTagFilter();
+  const f=activeBTag==='all'?[...books]:books.filter(b=>(b.tags||[]).includes(activeBTag));
+  const el=document.getElementById('booksGrid');
+  if(!f.length){
+    el.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--muted);font-size:13px;margin-top:60px;line-height:1.8;">${books.length===0?'No books yet.<br/>Tap + Add to get started.':'No books with this tag.'}</div>`;
+    return;
+  }
+  el.innerHTML=f.map((b,i)=>{
+    const col=SPINE[books.indexOf(b)%SPINE.length];
+    const init=b.title.split(' ').filter(w=>w).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const tg=(b.tags||[]).slice(0,2).map(t=>`<span class="tag-mini ${tagClass(t)}" style="font-size:10px;padding:2px 5px;">${esc(t)}</span>`).join('');
+    // Cover: try PDF thumbnail via Google Drive (only works if folderId is set), else placeholder
+    const coverHtml=b.folderId
+      ? `<img class="book-cover-img" src="" data-folderid="${esc(b.folderId)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+         <div class="book-cover-ph" style="background:${col};display:flex;">${init}</div>`
+      : `<div class="book-cover-ph" style="background:${col};">${init}</div>`;
+    return `<div class="book-card" onclick="openBookDetail('${b.id}')">
+      <div class="book-cover-wrap">${coverHtml}</div>
+      <div class="book-info">
+        <div class="book-title">${esc(b.title)}</div>
+        <div class="book-author">${esc(b.author)}</div>
+        ${tg?`<div class="book-tags">${tg}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddBook(){
+  openModal(`
+    <div class="modal-title">Add a book</div>
+    <div class="form-row"><label class="field-lbl">Title</label>
+      <input class="field-inp" id="bTitle" placeholder="e.g. Zero to One"/></div>
+    <div class="form-row"><label class="field-lbl">Author</label>
+      <input class="field-inp" id="bAuthor" placeholder="e.g. Peter Thiel"/></div>
+    <div class="form-row"><label class="field-lbl">Tags</label>
+      <div class="tag-picker" id="bTagPicker">${buildTagPicker('b')}</div></div>
+    <div class="btn-row">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-pri" onclick="saveBook()">Add book</button>
+    </div>`);
+}
+
+async function saveBook(){
+  const title=(document.getElementById('bTitle').value||'').trim();
+  const author=(document.getElementById('bAuthor').value||'').trim();
+  const selTags=[...document.querySelectorAll('#bTagPicker .tag-pick-chip.on')].map(e=>e.childNodes[0].textContent.trim());
+  if(!title) return;
+  const btn=document.querySelector('#overlay .btn-pri');
+  if(btn){btn.disabled=true;btn.textContent='Adding…';}
+  await api('addBook',{title,author,tags:selTags,folderId:''});
+  await loadAll();
+  updateStats(); closeModal(); renderBooks();
+}
+
+function openBookDetail(id){
+  const b=books.find(x=>x.id===id); if(!b) return;
+  const col=SPINE[books.indexOf(b)%SPINE.length];
+  const init=b.title.split(' ').filter(w=>w).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  const tg=(b.tags||[]).map(t=>`<span class="tag-mini ${tagClass(t)}">${esc(t)}</span>`).join('');
+  const coverHtml=`<div class="bk-cover-ph" style="background:${col};">${init}</div>`;
+  // Build modal manually so hero+tabs are in sticky top, bvc scrolls in body
+  document.getElementById('modal').innerHTML =
+    `<div class="modal-top">
+      <div class="modal-handle"></div>
+      <div class="bk-hero">
+        ${coverHtml}
+        <div style="flex:1;min-width:0;">
+          <div class="bk-title">${esc(b.title)}</div>
+          <div class="bk-author">${esc(b.author)}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">${tg}</div>
+        </div>
+      </div>
+      <div class="bk-view-tabs">
+        <button class="bvtab active" onclick="setBV(this,'ask','${id}')">Ask</button>
+        <button class="bvtab" onclick="setBV(this,'summary','${id}')">Summary</button>
+        <button class="bvtab" onclick="setBV(this,'killer','${id}')">Key sentences</button>
+        <button class="bvtab" onclick="setBV(this,'detailed','${id}')">Detailed read</button>
+      </div>
+    </div>
+    <div class="modal-body"><div id="bvc"></div></div>
+    <div class="modal-foot"><button class="btn-sec" style="width:100%;" onclick="closeModal()">Close</button></div>`;
+  document.getElementById('overlay').classList.remove('hidden');
+  setTimeout(()=>renderBV('ask',b), 0);
+}
+
+function setBV(el,view,id){
+  document.querySelectorAll('.bvtab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const b=books.find(x=>x.id===id);
+  if(b) renderBV(view,b);
+}
+
+async function renderBV(view,b){
+  const el=document.getElementById('bvc'); if(!el) return;
+  if(view==='ask'){
+    el.innerHTML=`
+      <div style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.5;">Ask anything about this book.</div>
+      <input class="bk-ask-inp" id="baInp" placeholder="e.g. What's the main argument?"/>
+      <button class="save-btn" style="margin-top:8px;" onclick="askBook('${b.id}')">Ask</button>
+      <div id="baAns" style="margin-top:10px;"></div>`;
+    return;
+  }
+  const cacheMap={summary:'summary',killer:'killerSentences',detailed:'detailedRead'};
+  const key=cacheMap[view];
+  const cached=b[key];
+  const has=cached&&(Array.isArray(cached)?cached.length>0:(cached||'').length>10);
+  if(has){showCached(view,b);return;}
+
+  el.innerHTML=`<div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Generating with Claude…</div>`;
+  const ctx=[b.summary?`Summary: ${b.summary}`:'',b.detailedRead?`Notes: ${b.detailedRead}`:''].filter(Boolean).join('\n\n')||`"${b.title}" by ${b.author}. Tags: ${(b.tags||[]).join(', ')}.`;
+  const prompts={
+    summary:`Write one insightful paragraph (100-130 words) summarising "${b.title}" by ${b.author}. Capture the core thesis and why it matters. Direct, not generic.`,
+    killer:`From "${b.title}" by ${b.author}, extract 6-8 of the most memorable, thought-provoking lines. Return ONLY a JSON array of strings.`,
+    detailed:`Create a structured summary of "${b.title}" by ${b.author}. Use ## section headers and bullet points. 350-450 words. Substantive and specific — build entirely from your knowledge of this book.`
+  };
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:1000,messages:[{role:'user',content:`${ctx}\n\n---\n${prompts[view]}`}]})});
+    const data=await resp.json();
+    const raw=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').trim();
+    if(view==='killer'){const m=raw.match(/\[[\s\S]*\]/);b.killerSentences=m?JSON.parse(m[0]):[raw];}
+    else if(view==='summary'){b.summary=raw;}
+    else{b.detailedRead=raw;}
+    // Write back to Sheet (fire-and-forget — don't block UI)
+    api('updateBookCache',{title:b.title, summary:b.summary||'', killerSentences:b.killerSentences||[], detailedRead:b.detailedRead||''});
+    showCached(view,b);
+  }catch(e){el.innerHTML=`<p style="color:var(--danger);font-size:13px;">${esc(e.message)}</p>`;}
+}
+
+function showCached(view,b){
+  const el=document.getElementById('bvc'); if(!el) return;
+  const badge=`<div class="gen-row"><span class="gen-badge">✓ Generated</span><button class="regen-btn" onclick="forceRegen('${view}','${b.id}')">Regenerate</button></div>`;
+  if(view==='summary'){el.innerHTML=badge+`<div class="answer-body">${md2html(b.summary)}</div>`;}
+  else if(view==='killer'){el.innerHTML=badge+(b.killerSentences||[]).map(s=>`<div class="killer-item"><div class="killer-dot"></div><div class="killer-text">${esc(s)}</div></div>`).join('');}
+  else{el.innerHTML=badge+`<div class="notes-md">${renderMd(b.detailedRead)}</div>`;}
+}
+
+function forceRegen(view,id){
+  const b=books.find(x=>x.id===id); if(!b) return;
+  if(view==='summary')b.summary='';
+  if(view==='killer')b.killerSentences=[];
+  if(view==='detailed')b.detailedRead='';
+  renderBV(view,b);
+}
+
+async function askBook(id){
+  const b=books.find(x=>x.id===id); if(!b) return;
+  const q=(document.getElementById('baInp').value||'').trim(); if(!q) return;
+  const ans=document.getElementById('baAns');
+  ans.innerHTML=`<div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Thinking…</div>`;
+  const ctx=[b.summary,b.detailedRead,(b.killerSentences||[]).join(' | ')].filter(Boolean).join('\n\n')||`"${b.title}" by ${b.author}`;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:800,
+        system:`Answer questions about "${b.title}" by ${b.author}. Direct and insightful. Under 200 words.`,
+        messages:[{role:'user',content:`Context:\n${ctx}\n\nQuestion: ${q}`}]})});
+    const data=await resp.json();
+    const text=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
+    ans.innerHTML=`<div class="answer-card" style="margin-top:0;"><div class="answer-body">${md2html(text)}</div></div>`;
+  }catch(e){ans.innerHTML=`<p style="color:var(--danger);font-size:13px;">${esc(e.message)}</p>`;}
+}
+
+// OVERLAY
+function openModal(html, stickyClose){
+  const inner = stickyClose
+    ? `<div class="modal-top"><div class="modal-handle"></div></div>` +
+      `<div class="modal-body" style="padding-bottom:8px;">${html}</div>` +
+      `<div class="modal-foot"><button class="btn-sec" style="width:100%;" onclick="closeModal()">Close</button></div>`
+    : `<div style="padding:20px 18px;padding-bottom:max(env(safe-area-inset-bottom),24px);overflow-y:auto;max-height:90vh;"><div class="modal-handle"></div>${html}</div>`;
+  document.getElementById('modal').innerHTML = inner;
+  document.getElementById('overlay').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('overlay').classList.add('hidden');}
+function maybeClose(e){if(e.target===document.getElementById('overlay'))closeModal();}
+
+// UTILS
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function md2html(md){
+  if(!md) return '';
+  return md.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^###? (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .split('\n').map(l=>l.trim()).filter(Boolean).map(l=>l.startsWith('<')?l:`<p>${l}</p>`).join('');
+}
+function renderMd(md){
+  if(!md) return '';
+  return esc(md)
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>').replace(/(<li>[^\n]*\n?)+/g,m=>`<ul>${m}</ul>`)
+    .replace(/^---$/gm,'<hr/>')
+    .split('\n').map(l=>{if(!l.trim()||l.startsWith('<'))return l;return `<p>${l}</p>`;}).join('');
+}
+
+// ── INIT — must be last, after all functions are defined ──────────────────
+document.getElementById('headerDate').textContent=
+  new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}).replace(',','');
+
+(async ()=>{
+  await loadAll();
+  updateStats();
+  renderQuotes();
+  renderBooks();
+  renderRecent();
+})();
+</script>
+</body>
+</html>
