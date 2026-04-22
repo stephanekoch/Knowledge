@@ -1,7 +1,7 @@
 // Vercel serverless proxy — forwards requests to Google Apps Script
 // Paste your Apps Script deployment URL below after deploying Code.gs
 
-const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxz4VKnz9NkQ06ThcuHI5-LvLeUK8sS2xwfn3ZxOas0NqQ07G5W75aKxecvuHuGe5XVIw/exec';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
