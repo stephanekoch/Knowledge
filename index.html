@@ -287,57 +287,12 @@ const TAG_AUTHOR_COLORS={tc0:'#0369a1',tc1:'#92400e',tc2:'#065f46',tc3:'#5b21b6'
 function borderColor(t){const c=tagColorMap[t]||'tc0';return TAG_BORDER_COLORS[c]||'#059669';}
 function authorColor(t){const c=tagColorMap[t]||'tc0';return TAG_AUTHOR_COLORS[c]||'#065f46';}
 
-let tags=['entrepreneurship','leadership','philosophy','sales','learning','stoicism','startups','money','psychology'];
+// Live data — loaded from Google Sheets via Apps Script proxy
+let tags   = [];
+let quotes = [];
+let books  = [];
 tags.forEach(t=>tagClass(t));
 
-let quotes=[
-  {id:'q1',text:'The only way to do great work is to love what you do.',author:'Steve Jobs',tags:['entrepreneurship','learning'],created:'2026-04-20'},
-  {id:'q2',text:'Waste no more time arguing about what a good man should be. Be one.',author:'Marcus Aurelius',tags:['stoicism','philosophy'],created:'2026-04-18'},
-  {id:'q3',text:'It is not that we have a short time to live, but that we waste a great deal of it.',author:'Seneca',tags:['stoicism','philosophy'],created:'2026-04-15'},
-  {id:'q4',text:'The best salespeople are the ones who ask the most questions.',author:'Neil Rackham',tags:['sales'],created:'2026-04-10'},
-  {id:'q5',text:'An investment in knowledge pays the best interest.',author:'Benjamin Franklin',tags:['learning','money'],created:'2026-04-05'},
-  {id:'q6',text:'You don\'t rise to the level of your goals, you fall to the level of your systems.',author:'James Clear',tags:['learning','leadership'],created:'2026-03-28'},
-  {id:'q7',text:'Move fast and learn things.',author:'Shane Parrish',tags:['learning','startups'],created:'2026-03-20'},
-  {id:'q8',text:'Sell the problem you solve, not the product you make.',author:'Unknown',tags:['sales','entrepreneurship'],created:'2026-03-10'},
-];
-
-let books=[
-  {id:'b1',folderId:'',title:'Selling With',author:'Nate Nasralla',tags:['sales','entrepreneurship'],
-   summary:'A fresh take on B2B selling: the best salespeople win by equipping buyers to build the internal case for a purchase. Your champion does 90% of the selling — your job is to arm them.',
-   killerSentences:['Your champion is doing 90% of the selling — your job is to equip them.','Stop selling to your buyer. Start selling through them.','Most deals die in rooms you\'ll never be in.','A great deck without a great champion is just a PDF.','Buyers don\'t need more information. They need less risk.'],
-   detailedRead:'## Core thesis\n- Selling happens inside your buyer\'s org, not in your meetings\n- Equip your champion to sell internally\n\n## The Champion Builder model\n- Identify the champion (not just the buyer)\n- Give them language to sell internally\n- Remove obstacles before they become objections\n\n## Key frameworks\n- 3-layer value messaging: business, personal, emotional\n- The "deal room" — the meeting you\'re never in',
-   created:'2026-04-19'},
-  {id:'b2',folderId:'',title:'Zero to One',author:'Peter Thiel',tags:['startups','entrepreneurship'],
-   summary:'Thiel argues genuine innovation means going from zero to one. The best businesses are monopolies solving problems nobody else is solving, built on secrets others haven\'t found yet.',
-   killerSentences:['Every moment in business happens only once.','Competition is for losers.','The most contrarian thing of all is not to oppose the crowd but to think for yourself.','Secrets are the foundation of every great business.'],
-   detailedRead:'## The monopoly thesis\n- Compete → race to zero margins\n- Monopoly → freedom to innovate long-term\n\n## Four characteristics\n- Proprietary technology (10x better)\n- Network effects\n- Economies of scale\n- Strong branding\n\n## Contrarian thinking\n- Ask: what important truth do very few people agree with you on?',
-   created:'2026-04-12'},
-  {id:'b3',folderId:'',title:'Meditations',author:'Marcus Aurelius',tags:['stoicism','philosophy','leadership'],
-   summary:"Aurelius's private journal is the most direct window into Stoic philosophy as actually lived. A guide to virtue, resilience, and leading with integrity under enormous pressure.",
-   killerSentences:['You have power over your mind, not outside events. Realise this, and you will find strength.','The impediment to action advances action. What stands in the way becomes the way.','Confine yourself to the present.'],
-   detailedRead:'## Core Stoic principles\n- Dichotomy of control: focus only on what you can influence\n- Amor fati: love of fate\n- Memento mori: awareness of death as motivator\n\n## On leadership\n- Lead by example, never by decree\n- Anger is always a choice — and always the wrong one',
-   created:'2026-03-30'},
-  {id:'b4',folderId:'',title:'The Mom Test',author:'Rob Fitzpatrick',tags:['startups','sales'],
-   summary:'A practical manual on talking to customers without getting politely useless answers. Ask about their life and past behaviour — not your idea.',
-   killerSentences:['Talk about their life, not your idea.','Compliments are worthless. Commitments are signal.','If they won\'t give you time, they won\'t give you money.'],
-   detailedRead:'## The core rule\n- Never ask anyone if your idea is good\n- Ask about their life, problems, past behaviour\n\n## Three keys\n- Past behaviour (not hypotheticals)\n- Specifics, not generalities\n- Shut up and listen',
-   created:'2026-03-15'},
-  {id:'b5',folderId:'',title:'Atomic Habits',author:'James Clear',tags:['learning','psychology'],
-   summary:'Tiny, consistent changes compound into remarkable results. Four laws of behaviour change for building good habits and breaking bad ones.',
-   killerSentences:['You do not rise to the level of your goals. You fall to the level of your systems.','Every action you take is a vote for the type of person you wish to become.','Habits are the compound interest of self-improvement.'],
-   detailedRead:'## Four laws of behaviour change\n- Make it obvious\n- Make it attractive\n- Make it easy\n- Make it satisfying\n\n## Identity-based habits\n- Don\'t aim for outcomes — become the type of person who achieves them',
-   created:'2026-03-01'},
-  {id:'b6',folderId:'',title:'The Hard Thing About Hard Things',author:'Ben Horowitz',tags:['leadership','startups','entrepreneurship'],
-   summary:"Horowitz's raw account of building a startup through near-death experiences. A guide to making hard calls when there's no playbook.",
-   killerSentences:["There's no recipe for leading a company through hard times.","Take care of the people, the products, and the profits — in that order.",'Every time you make the hard, correct decision you become a little bit more the leader you need to be.'],
-   detailedRead:'## The Struggle\n- Every founder goes through it\n- It\'s not weakness, it\'s the job\n\n## Wartime vs peacetime CEO\n- Peacetime: nurture culture\n- Wartime: break rules, focus on survival\n\n## People decisions\n- Fire fast when it\'s right\n- Be honest with your team',
-   created:'2026-02-14'},
-];
-
-quotes.sort((a,b)=>b.created.localeCompare(a.created));
-books.sort((a,b)=>b.created.localeCompare(a.created));
-
-// Recent searches store: [{q, answer, sources, ts}]
 let recentSearches = JSON.parse(localStorage.getItem('kn-recent')||'[]');
 
 let activeQTag='all', activeBTag='all';
@@ -376,7 +331,7 @@ async function askKnowledge(){
   const sys=`You are a personal knowledge assistant. ${hasPers?'Prioritise the user\'s personal library. Reference exact quotes and book titles.':'Use general knowledge.'} Be direct and insightful. Under 300 words.${hasPers?' At the END output ONLY: <sources>{"books":["Title"],"quotes":["Author"]}</sources>':''}`;
 
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:MODEL,max_tokens:1000,system:sys,messages:[{role:'user',content:hasPers?`My library:\n${ctx}\n\nQuestion: ${q}`:q}]})});
     const data=await resp.json();
     const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
@@ -725,7 +680,7 @@ async function renderBV(view,b){
     detailed:`Create a structured summary of "${b.title}" by ${b.author}. Use ## section headers and bullet points. 350-450 words. Substantive and specific — build entirely from your knowledge of this book.`
   };
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:MODEL,max_tokens:1000,messages:[{role:'user',content:`${ctx}\n\n---\n${prompts[view]}`}]})});
     const data=await resp.json();
     const raw=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').trim();
@@ -759,7 +714,7 @@ async function askBook(id){
   ans.innerHTML=`<div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Thinking…</div>`;
   const ctx=[b.summary,b.detailedRead,(b.killerSentences||[]).join(' | ')].filter(Boolean).join('\n\n')||`"${b.title}" by ${b.author}`;
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:MODEL,max_tokens:800,
         system:`Answer questions about "${b.title}" by ${b.author}. Direct and insightful. Under 200 words.`,
         messages:[{role:'user',content:`Context:\n${ctx}\n\nQuestion: ${q}`}]})});
